@@ -175,6 +175,12 @@ defaults:
       registry: arohcpsvcdev.azurecr.io
       repository: kube-applier
       digest: ""
+    cosmosContainerName: "Manifests-MC-{{ .ctx.stamp }}"
+    cosmosContainerMaxScale: 4000
+    managedIdentityName: kube-applier
+    k8s:
+      namespace: kube-applier
+      serviceAccountName: kube-applier
   # Secret Sync Controller
   secretSyncController:
     image:
@@ -950,14 +956,6 @@ defaults:
           maxSurge: 1
     azureRuntimeConfig:
       tlsCertificatesIssuer: OneCertV2-PublicCA
-  # Kube Applier
-  kubeApplier:
-    cosmosContainerName: "Manifests-MC-{{ .ctx.stamp }}"
-    cosmosContainerMaxScale: 4000
-    managedIdentityName: kube-applier
-    k8s:
-      namespace: kube-applier
-      serviceAccountName: kube-applier
   # Image Sync
   imageSync:
     environmentName: aro-hcp-image-sync

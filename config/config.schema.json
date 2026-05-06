@@ -1364,11 +1364,30 @@
       "properties": {
         "image": {
           "$ref": "#/definitions/containerImage"
+        },
+        "cosmosContainerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$"
+        },
+        "cosmosContainerMaxScale": {
+          "type": "integer"
+        },
+        "managedIdentityName": {
+          "type": "string"
+        },
+        "k8s": {
+          "$ref": "#/definitions/k8sDeployment"
         }
       },
       "additionalProperties": false,
       "required": [
-        "image"
+        "image",
+        "cosmosContainerName",
+        "cosmosContainerMaxScale",
+        "managedIdentityName",
+        "k8s"
       ]
     },
     "adminApi": {
@@ -2283,33 +2302,6 @@
       "required": [
         "additionalInstallArg",
         "namespace"
-      ]
-    },
-    "kubeApplier": {
-      "type": "object",
-      "properties": {
-        "cosmosContainerName": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 64,
-          "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$"
-        },
-        "cosmosContainerMaxScale": {
-          "type": "integer"
-        },
-        "managedIdentityName": {
-          "type": "string"
-        },
-        "k8s": {
-          "$ref": "#/definitions/k8sDeployment"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "cosmosContainerName",
-        "cosmosContainerMaxScale",
-        "managedIdentityName",
-        "k8s"
       ]
     },
     "imageSync": {
@@ -3235,7 +3227,6 @@
     "global",
     "hypershift",
     "imageSync",
-    "kubeApplier",
     "acrPull",
     "secretSyncController",
     "maestro",
