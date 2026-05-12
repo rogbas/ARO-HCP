@@ -4,6 +4,7 @@ import {
 } from '../modules/common.bicep'
 
 import * as mi from '../modules/managed-identities.bicep'
+import * as res from '../modules/resource.bicep'
 
 @description('Azure Region Location')
 param location string = resourceGroup().location
@@ -555,10 +556,13 @@ module eventGrindPrivateEndpoint '../modules/private-endpoint.bicep' = if (maest
 //   K U B E   A P P L I E R
 //
 
+var rpCosmosDbAccountRef = res.cosmosDBAccountRefFromId(rpCosmosDbAccountId)
+
 module kubeApplierCosmos '../modules/rp-cosmos-kube-applier.bicep' = if (rpCosmosDbAccountId != '') {
   name: 'kube-applier-cosmos'
+  scope: resourceGroup(rpCosmosDbAccountRef.resourceGroup.subscriptionId, rpCosmosDbAccountRef.resourceGroup.name)
   params: {
-    rpCosmosDbAccountId: rpCosmosDbAccountId
+    cosmosDBAccountName: rpCosmosDbAccountRef.name
     containerName: kubeApplierContainerName
     containerMaxScale: kubeApplierContainerMaxScale
     kubeApplierManagedIdentityPrincipalId: mi.getManagedIdentityByName(
