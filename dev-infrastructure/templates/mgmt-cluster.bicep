@@ -576,7 +576,7 @@ module kubeApplierCosmos '../modules/rp-cosmos-kube-applier.bicep' = if (rpCosmo
 //  C O S M O S D B   P R I V A T E   E N D P O I N T   C O N N E C T I O N
 //
 
-module cosmosDbPrivateEndpoint '../modules/private-endpoint.bicep' = if (rpCosmosDbPrivate) {
+module cosmosDbPrivateEndpoint '../modules/private-endpoint.bicep' = if (rpCosmosDbPrivate && rpCosmosDbAccountId != '') {
   name: 'cosmosDbPrivateEndpoint'
   params: {
     location: location

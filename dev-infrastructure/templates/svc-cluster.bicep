@@ -760,7 +760,7 @@ module rpCosmosDb '../modules/rp-cosmos.bicep' = if (rpCosmosDbAccountId != '') 
   }
 }
 
-module rpCosmosdbPrivateEndpoint '../modules/private-endpoint.bicep' = if (rpCosmosDbPrivate) {
+module rpCosmosdbPrivateEndpoint '../modules/private-endpoint.bicep' = if (rpCosmosDbPrivate && rpCosmosDbAccountId != '') {
   name: 'rp-pe-${uniqueString(deployment().name)}'
   params: {
     location: location
