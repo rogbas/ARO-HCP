@@ -239,13 +239,37 @@ module.exports = async ({ github, context, core }) => {
 
   let aiAnalysis = null;
   if (areas.size > 0) {
-    const diffResponse = await github.rest.pulls.get({
-      owner,
-      repo,
-      pull_number: prNumber,
-      mediaType: { format: "diff" },
-    });
-    const diff = /** @type {string} */ (/** @type {unknown} */ (diffResponse.data));
+    const riskFileOrder = filesResponse
+      .filter((f) => f.patch)
+      .sort((a, b) => {
+        const riskA = mapping.mappings.reduce((max, rule) => {
+          if (rule.paths.some((p) => matchGlob(p, a.filename))) {
+            return Math.max(max, RISK_ORDER[rule.risk] || 0);
+          }
+          return max;
+        }, 0);
+        const riskB = mapping.mappings.reduce((max, rule) => {
+          if (rule.paths.some((p) => matchGlob(p, b.filename))) {
+            return Math.max(max, RISK_ORDER[rule.risk] || 0);
+          }
+          return max;
+        }, 0);
+        return riskB - riskA;
+      });
+
+    let diff = "";
+    for (const file of riskFileOrder) {
+      const chunk = `--- a/${file.filename}\n+++ b/${file.filename}\n${file.patch}\n`;
+      if (diff.length + chunk.length > MAX_DIFF_SIZE) break;
+      diff += chunk;
+    }
+
+    if (diff.length < MAX_DIFF_SIZE && riskFileOrder.length < filesResponse.length) {
+      core.info(
+        `Diff built from ${riskFileOrder.length} files with patches ` +
+        `(${filesResponse.length - riskFileOrder.length} files had no patch)`
+      );
+    }
 
     aiAnalysis = await analyzeWithAI({
       github,
