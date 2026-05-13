@@ -16,7 +16,6 @@ package framework
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -113,43 +112,39 @@ func RunVMCommand(ctx context.Context, tc interface {
 }
 
 // GetVirtualMachinesInResourceGroup lists all VMs in the given resource group
-// with a polling loop to handle ARM replication delays.
+// if the VM list contains at least expectedMinimumCount items
 func GetVirtualMachinesInResourceGroup(
 	ctx context.Context,
 	computeClientFactory *armcompute.ClientFactory,
 	resourceGroupName string,
 	expectedMinimumCount int,
-	timeout time.Duration,
 ) ([]*armcompute.VirtualMachine, error) {
-	ctx, cancel := context.WithTimeoutCause(ctx, timeout,
-		fmt.Errorf("timed out waiting for %d VMs in resource group %q", expectedMinimumCount, resourceGroupName))
-	defer cancel()
-
 	vmClient := computeClientFactory.NewVirtualMachinesClient()
-	const pollInterval = 10 * time.Second
-
-	for {
-		var vms []*armcompute.VirtualMachine
-		pager := vmClient.NewListPager(resourceGroupName, nil)
-		for pager.More() {
-			page, err := pager.NextPage(ctx)
-			if err != nil {
-				if errors.Is(err, context.DeadlineExceeded) {
-					return nil, fmt.Errorf("caused by: %w, error: %w", context.Cause(ctx), err)
-				}
-				return nil, fmt.Errorf("failed to list VMs in resource group %q: %w", resourceGroupName, err)
-			}
-			vms = append(vms, page.Value...)
+	var vms []*armcompute.VirtualMachine
+	pager := vmClient.NewListPager(resourceGroupName, nil)
+	for pager.More() {
+		page, err := pager.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to list VMs in resource group %q: %w", resourceGroupName, err)
 		}
-
-		if len(vms) >= expectedMinimumCount {
-			return vms, nil
-		}
-
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("caused by: %w, error: %w", context.Cause(ctx), ctx.Err())
-		case <-time.After(pollInterval):
-		}
+		vms = append(vms, page.Value...)
 	}
+
+	if len(vms) < expectedMinimumCount {
+		vmNames := make([]string, 0, len(vms))
+		for _, vm := range vms {
+			if vm.Name != nil {
+				vmNames = append(vmNames, *vm.Name)
+			}
+		}
+		return nil, fmt.Errorf(
+			"not enough VMs in resource group %q: expecting %d, got %d (%v)",
+			resourceGroupName,
+			expectedMinimumCount,
+			len(vms),
+			vmNames,
+		)
+	}
+
+	return vms, nil
 }
