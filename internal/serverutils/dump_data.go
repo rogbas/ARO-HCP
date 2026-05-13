@@ -69,7 +69,7 @@ func DumpDataToLogger(ctx context.Context, resourcesDBClient database.ResourcesD
 		currOperationTarget := strings.ToLower(operation.ExternalID.String())
 		if strings.HasPrefix(currOperationTarget, resourceIDString) {
 			logger.Info(fmt.Sprintf("dumping resourceID %v", operation.ResourceID),
-				"currentResourceID", operation.ResourceID.String(),
+				"currentResourceID", resourceIDToString(operation.ResourceID),
 				"content", operation,
 			)
 		}
@@ -79,6 +79,13 @@ func DumpDataToLogger(ctx context.Context, resourcesDBClient database.ResourcesD
 	}
 
 	return utils.TrackError(errors.Join(errs...))
+}
+
+func resourceIDToString(id *azcorearm.ResourceID) string {
+	if id == nil {
+		return "<missing>"
+	}
+	return id.String()
 }
 
 // DumpBillingToLogger dumps active billing documents for the given cluster resource ID to the logger.
