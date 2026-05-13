@@ -16,6 +16,7 @@ package framework
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -178,7 +179,12 @@ func GetVirtualMachineConsoleLog(
 	}
 
 	// Fetch the actual log content from the blob storage URL
-	resp, err := http.Get(*result.SerialConsoleLogBlobURI)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, *result.SerialConsoleLogBlobURI, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request for console log blob for VM %q: %w", vmName, err)
+	}
+	client := &http.Client{Timeout: 5 * time.Minute}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch console log from blob storage for VM %q: %w", vmName, err)
 	}
@@ -217,7 +223,8 @@ func DownloadAllVirtualMachineConsoleLogs(
 	}
 
 	if len(vms) == 0 {
-		return fmt.Errorf("no VMs found in resource group %q", resourceGroupName)
+		logger.Info("no VMs found in resource group", "resourceGroup", resourceGroupName)
+		return nil
 	}
 
 	// Download console log for each VM
@@ -244,15 +251,16 @@ func DownloadAllVirtualMachineConsoleLogs(
 			continue
 		}
 
-		_, err = io.Copy(logFile, logReader)
-		logFile.Close()
+		_, copyErr := io.Copy(logFile, logReader)
+		closeErr := logFile.Close()
 		logReader.Close()
 
-		logger.Info("VM console log fetched", "vmName", *vm.Name, "targetPath", logFilePath)
-
+		err = errors.Join(copyErr, closeErr)
 		if err != nil {
 			downloadErrors = append(downloadErrors, fmt.Sprintf("VM %q: failed to write log: %v", *vm.Name, err))
 			continue
+		} else {
+			logger.Info("VM console log fetched", "vmName", *vm.Name, "targetPath", logFilePath)
 		}
 	}
 
