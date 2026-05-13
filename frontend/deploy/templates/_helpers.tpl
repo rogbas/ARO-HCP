@@ -94,6 +94,12 @@ spec:
           - name: mdsd-asa-run-vol
             mountPath: /var/run/mdsd
         {{- end }}
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 8443
+          periodSeconds: 10
+          failureThreshold: 30
         livenessProbe:
           httpGet:
             path: /healthz
