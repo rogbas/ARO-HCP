@@ -13,6 +13,7 @@ rgOrdered:
   - global
   - hcp-kusto-us
   - westus3-shared-resources
+  - centralus-shared-resources
   discovery:
     # Rules are evaluated in order; first match wins.
     rules:
