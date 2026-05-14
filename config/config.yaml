@@ -175,6 +175,12 @@ defaults:
       registry: arohcpsvcdev.azurecr.io
       repository: kube-applier
       digest: ""
+    cosmosContainerName: "Manifests-MC-{{ .ctx.stamp }}"
+    cosmosContainerMaxScale: 4000
+    managedIdentityName: kube-applier
+    k8s:
+      namespace: kube-applier
+      serviceAccountName: kube-applier
   # Secret Sync Controller
   secretSyncController:
     image:
@@ -735,7 +741,6 @@ defaults:
         limits:
           memory: unlimited
     cosmosDB:
-      deploy: true
       disableLocalAuth: true
       name: "arohcp{{ .ctx.environment }}-rp-{{ .ctx.regionShort }}" # [globally-unique]
       private: true
