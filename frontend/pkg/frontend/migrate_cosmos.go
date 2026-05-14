@@ -164,19 +164,5 @@ func MigrateCosmosOrDie(ctx context.Context, resourcesDBClient database.Resource
 		if err := clusterIterator.GetError(); err != nil {
 			panic(err)
 		}
-
-		operationIterator, err := resourcesDBClient.Operations(subscription.ResourceID.Name).List(ctx, nil)
-		if err != nil {
-			panic(err)
-		}
-		for _, operation := range operationIterator.Items(ctx) {
-			_, err := resourcesDBClient.Operations(operation.ResourceID.SubscriptionID).Get(ctx, operation.ResourceID.Name)
-			if err != nil {
-				panic(err)
-			}
-		}
-		if err := operationIterator.GetError(); err != nil {
-			panic(err)
-		}
 	}
 }
