@@ -1,0 +1,102 @@
+{
+  "mappings": [
+    {
+      "paths": ["frontend/**"],
+      "areas": ["cluster-lifecycle", "authentication", "api-operations"],
+      "risk": "high",
+      "description": "RP Frontend — ARM API entry point for all cluster operations"
+    },
+    {
+      "paths": ["backend/**"],
+      "areas": ["control-plane-upgrades", "async-operations"],
+      "risk": "high",
+      "description": "RP Backend — async operation state management"
+    },
+    {
+      "paths": ["cluster-service/**"],
+      "areas": ["cluster-lifecycle", "nodepool-management", "upgrades"],
+      "risk": "critical",
+      "description": "Cluster Service — core HCP orchestration"
+    },
+    {
+      "paths": ["maestro/**"],
+      "areas": ["all-e2e"],
+      "risk": "critical",
+      "description": "Maestro — manifest distribution pipeline (affects all tests)"
+    },
+    {
+      "paths": ["admin/**"],
+      "areas": ["admin-api", "sre-operations"],
+      "risk": "medium",
+      "description": "Admin API — SRE breakglass and diagnostics"
+    },
+    {
+      "paths": ["internal/api/**"],
+      "areas": ["all-e2e"],
+      "risk": "critical",
+      "description": "Shared API definitions — affects all consumers"
+    },
+    {
+      "paths": ["internal/database/**"],
+      "areas": ["cluster-lifecycle", "async-operations"],
+      "risk": "high",
+      "description": "Database abstractions — data integrity"
+    },
+    {
+      "paths": ["internal/validation/**"],
+      "areas": ["cluster-lifecycle", "nodepool-management"],
+      "risk": "medium",
+      "description": "Validation logic — request validation"
+    },
+    {
+      "paths": ["internal/**"],
+      "areas": ["cluster-lifecycle"],
+      "risk": "medium",
+      "description": "Shared internal libraries"
+    },
+    {
+      "paths": ["dev-infrastructure/**"],
+      "areas": ["infrastructure", "cluster-lifecycle"],
+      "risk": "high",
+      "description": "Azure infrastructure (Bicep) — cluster foundations"
+    },
+    {
+      "paths": ["test/e2e/**", "test/util/**", "test/cmd/**"],
+      "areas": ["test-framework"],
+      "risk": "medium",
+      "description": "E2E test code itself — may change test behavior"
+    },
+    {
+      "paths": ["config/**"],
+      "areas": ["all-e2e"],
+      "risk": "high",
+      "description": "Environment configuration — affects deployment behavior"
+    },
+    {
+      "paths": ["sessiongate/**"],
+      "areas": ["authentication"],
+      "risk": "medium",
+      "description": "Session gate — authentication gateway"
+    },
+    {
+      "paths": ["tooling/templatize/**"],
+      "areas": ["infrastructure", "all-e2e"],
+      "risk": "high",
+      "description": "Pipeline template processor — affects all deployments"
+    }
+  ],
+  "riskLevels": ["low", "medium", "high", "critical"],
+  "areaDescriptions": {
+    "cluster-lifecycle": "Cluster create, get, list, update, delete operations",
+    "nodepool-management": "NodePool CRUD, autoscaling, labels, taints, ephemeral disks",
+    "authentication": "ARM token validation, external auth, OIDC, workload identity",
+    "api-operations": "ARM REST API request/response handling",
+    "control-plane-upgrades": "Y-stream and Z-stream control plane upgrades",
+    "async-operations": "Backend async operation tracking and state management",
+    "admin-api": "SRE breakglass, admin credentials, serial console",
+    "sre-operations": "Diagnostics, must-gather, cluster admin access",
+    "infrastructure": "Azure resource provisioning (Bicep, networking, identity)",
+    "test-framework": "E2E test helpers, framework, verifiers",
+    "all-e2e": "Foundational change — potentially affects all E2E test suites"
+  }
+}
